@@ -1,0 +1,174 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="Plated India — contemporary dining, thoughtful plates and warm hospitality.">
+<title>Plated India — Contemporary Dining</title>
+<script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+<script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+<script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+</head>
+<body>
+<div id="root"></div>
+<script type="text/babel">
+const { useEffect, useMemo, useState } = React;
+
+const dishes = [
+  { name: 'Korean Gochujang Glazed Chicken', price: '₹895', desc: 'Gochujang glaze, roasted vegetables, herbs and a rich savoury jus.', image: './images/dish-1.png', tag: 'SIGNATURE' },
+  { name: 'Creamy Chicken Alfredo', price: '₹795', desc: 'Silky parmesan cream, grilled chicken, herbs and fresh pasta.', image: './images/dish-2.png', tag: 'FAVOURITE' },
+  { name: 'Golden Chicken Bowl', price: '₹725', desc: 'Spiced chicken, fragrant rice, greens and fresh guacamole.', image: './images/dish-3.png', tag: 'POPULAR' },
+  { name: 'Plated Pasta', price: '₹745', desc: 'Comforting pasta, roasted chicken and a delicate herb finish.', image: './images/dish-4.png', tag: 'NEW' },
+  { name: 'Matcha Basque Cheesecake', price: '₹495', desc: 'Roasted hazelnut, cacao and vanilla ice cream.', image: './images/dish-4.png', tag: 'DESSERT' },
+  { name: 'Yuzu Panna Cotta', price: '₹475', desc: 'Apple, brown butter, crème fraîche and caramel.', image: './images/dish-3.png', tag: 'DESSERT' },
+];
+
+const categories = ['All', 'Signatures', 'Mains', 'Bowls', 'Vegetarian', 'Desserts'];
+const prizes = ['10% OFF', 'FREE DESSERT', 'FREE DRINK', '15% OFF', 'COMPLIMENTARY SIDE', 'TRY AGAIN'];
+
+function usePath() {
+  const getPath = () => { const h = window.location.hash.replace(/^#/, ''); return h || '/'; };
+  const [path, setPath] = useState(getPath());
+  useEffect(() => {
+    const onPop = () => setPath(getPath());
+    window.addEventListener('popstate', onPop);
+    window.addEventListener('hashchange', onPop);
+    return () => window.removeEventListener('popstate', onPop);
+      window.removeEventListener('hashchange', onPop);
+  }, []);
+  return path;
+}
+
+function navigate(path) {
+  window.location.hash = path;
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function App() {
+  const path = usePath();
+  const [menuOpen, setMenuOpen] = useState(false);
+  const [circleOpen, setCircleOpen] = useState(false);
+  const [toast, setToast] = useState('');
+
+  useEffect(() => {
+    const reveal = () => document.querySelectorAll('.reveal:not(.visible)').forEach(el => {
+      const r = el.getBoundingClientRect();
+      if (r.top < window.innerHeight * .9) el.classList.add('visible');
+    });
+    reveal();
+    window.addEventListener('scroll', reveal, { passive: true });
+    return () => window.removeEventListener('scroll', reveal);
+  }, [path]);
+
+  const link = (p) => { setMenuOpen(false); navigate(p); };
+
+  return <div className="site">
+    <style>{styles}</style>
+    <Header path={path} menuOpen={menuOpen} setMenuOpen={setMenuOpen} link={link} onCircle={() => setCircleOpen(true)} />
+    {path === '/' && <Home link={link} onCircle={() => setCircleOpen(true)} setToast={setToast} />}
+    {path === '/menu' && <MenuPage link={link} />}
+    {path === '/story' && <StoryPage link={link} />}
+    {path === '/circle' && <CirclePage onCircle={() => setCircleOpen(true)} setToast={setToast} />}
+    {path === '/spin' && <SpinPage setToast={setToast} />}
+    {path === '/contact' && <ContactPage />}
+    <Footer link={link} />
+    {circleOpen && <CircleModal close={() => setCircleOpen(false)} setToast={setToast} />}
+    {toast && <div className="toast" onClick={() => setToast('')}>{toast}</div>}
+  </div>;
+}
+
+function Header({ path, menuOpen, setMenuOpen, link, onCircle }) {
+  return <header className="nav-wrap">
+    <nav className="nav">
+      <button className="brand" onClick={() => link('/')} aria-label="Plated India home"><span>PLATED</span><small>INDIA</small></button>
+      <div className={`nav-links ${menuOpen ? 'open' : ''}`}>
+        {[['/', 'Home'], ['/menu', 'Menu'], ['/story', 'Our Story'], ['/circle', 'Loyalty Circle'], ['/contact', 'Contact']].map(([p, label]) =>
+          <button key={p} className={path === p ? 'active' : ''} onClick={() => link(p)}>{label}</button>)}
+        <button className="mobile-circle" onClick={onCircle}>Join the Circle</button>
+      </div>
+      <div className="nav-actions">
+        <button className="text-link" onClick={onCircle}>Join Circle</button>
+        <button className="reserve-btn" onClick={() => link('/contact')}>Reserve a Table</button>
+      </div>
+      <button className="hamb" onClick={() => setMenuOpen(!menuOpen)} aria-label="Open menu"><i></i><i></i></button>
+    </nav>
+  </header>;
+}
+
+function Home({ link, onCircle, setToast }) {
+  return <main>
+    <section className="hero">
+      <div className="hero-image" style={{backgroundImage:"url('./images/dish-1.png')"}}></div>
+      <div className="hero-shade"></div>
+      <div className="hero-copy reveal visible">
+        <p className="eyebrow light">CONTEMPORARY DINING · NEW DELHI</p>
+        <h1>One plate.<br/><em>Whole world.</em></h1>
+        <p>Comfort food reimagined with refined ingredients, thoughtful technique and the warmth of a table worth staying at.</p>
+        <div className="hero-buttons"><button className="btn light-btn" onClick={() => link('/menu')}>Explore the Menu <span>↗</span></button><button className="ghost-light" onClick={() => link('/contact')}>Book a Table</button></div>
+      </div>
+      <div className="hero-note">SINCE 2026 <span></span> PLATED INDIA</div>
+      <div className="scroll-cue">SCROLL <span>↓</span></div>
+    </section>
+
+    <section className="intro section reveal">
+      <div className="intro-image"><img src="./images/dish-3.png" alt="Plated chicken bowl"/></div>
+      <div className="intro-copy"><p className="eyebrow">ABOUT PLATED</p><h2>More than<br/><em>a meal.</em></h2><p>Plated is a modern restaurant built around one simple idea: take the foods people already love and give them a little more imagination.</p><p>From Indian-inspired comfort to flavours from around the world, every dish arrives complete, considered and ready to be remembered.</p><button className="arrow-link" onClick={() => link('/story')}>Discover our story <span>↗</span></button></div>
+    </section>
+
+    <section className="signature section sage reveal">
+      <div className="section-head"><div><p className="eyebrow">SIGNATURE MENU</p><h2>A curated expression<br/><em>of the season.</em></h2></div><button className="arrow-link dark" onClick={() => link('/menu')}>Explore all menu <span>↗</span></button></div>
+      <div className="dish-grid">{dishes.slice(0,3).map(d => <DishCard key={d.name} dish={d} />)}</div>
+    </section>
+
+    <section className="experience section reveal">
+      <div className="experience-left"><p className="eyebrow">THE EXPERIENCE</p><h2>Come hungry.<br/><em>Leave inspired.</em></h2><p>Warm service, bold flavours and a room designed for long lunches, spontaneous dinners and the people you want around your table.</p></div>
+      <div className="experience-points"><Point n="01" title="Fresh ingredients" text="Thoughtful produce, prepared with care."/><Point n="02" title="Bold flavours" text="Familiar comfort with an unexpected turn."/><Point n="03" title="A modern table" text="An easygoing setting with fine-dining attention."/></div>
+    </section>
+
+    <section className="story-banner reveal"><div className="story-bg"></div><div className="story-overlay"></div><div className="story-content"><p className="eyebrow light">OUR PHILOSOPHY</p><h2>Rooted in tradition.<br/><em>Created for today.</em></h2><button className="btn light-btn" onClick={() => link('/story')}>Our Story <span>↗</span></button></div></section>
+
+    <section className="circle-teaser section reveal">
+      <div className="circle-art"><div className="circle-ring">PLATED · CIRCLE · PLATED · CIRCLE · </div><div className="circle-center">PC</div></div>
+      <div><p className="eyebrow">LOYALTY PROGRAM · LIFETIME ACCESS</p><h2>Welcome to<br/><em>the Plated Circle.</em></h2><p>Good food deserves good company. Join our circle for exclusive rewards, surprises and special moments created just for our regulars.</p><div className="two-btn"><button className="btn dark-btn" onClick={onCircle}>Join the Circle</button><button className="arrow-link" onClick={() => link('/spin')}>Try your luck <span>↗</span></button></div></div>
+    </section>
+
+    <section className="spin-strip reveal"><div><p className="eyebrow light">A LITTLE SOMETHING EXTRA</p><h2>Feeling <em>lucky?</em></h2><p>Spin the Plated Wheel and reveal a little reward for your next visit.</p></div><button className="wheel-cta" onClick={() => link('/spin')}>SPIN THE WHEEL <span>↗</span></button></section>
+
+    <Reviews />
+    <section className="final-cta reveal"><p className="eyebrow">PLATED INDIA</p><h2>Your table<br/><em>is waiting.</em></h2><button className="btn dark-btn" onClick={() => link('/contact')}>Reserve a Table <span>↗</span></button></section>
+  </main>;
+}
+
+function Point({n,title,text}) { return <div className="point"><span>{n}</span><div><h3>{title}</h3><p>{text}</p></div></div> }
+function DishCard({dish}) { return <article className="dish"><div className="dish-image"><img src={dish.image} alt={dish.name}/><span>{dish.tag}</span></div><div className="dish-meta"><div><h3>{dish.name}</h3><p>{dish.desc}</p></div><strong>{dish.price}</strong></div></article> }
+function Reviews(){ return <section className="reviews section reveal"><div className="section-head"><div><p className="eyebrow">AT THE TABLE</p><h2>Good food.<br/><em>Good company.</em></h2></div><div className="review-mark">★★★★★</div></div><div className="review-grid">{[['“The flavours were incredible and the entire experience felt so thoughtfully designed.”','Aanya M.'],['“Beautiful food, warm service and a completely different take on comfort dining.”','Rohan K.'],['“One of those restaurants you immediately want to come back to.”','Meera S.']].map(([q,n])=><blockquote key={n}><span>“</span><p>{q}</p><footer>★★★★★ <small>{n}</small></footer></blockquote>)}</div></section> }
+
+function MenuPage(){ const [cat,setCat]=useState('All'); const filtered=useMemo(()=>dishes.filter(d=>cat==='All'||(cat==='Signatures'&&d.tag==='SIGNATURE')||(cat==='Desserts'&&d.tag==='DESSERT')||['Mains','Bowls','Vegetarian'].includes(cat)),[cat]); return <main className="inner-page"><PageHero eyebrow="THE MENU" title={<>A table full of<br/><em>good ideas.</em></>} text="A collection of complete, considered dishes inspired by comfort food from India and around the world."/><section className="menu-section section"><div className="category-bar">{categories.map(c=><button key={c} className={cat===c?'selected':''} onClick={()=>setCat(c)}>{c}</button>)}</div><div className="menu-list">{filtered.map((d,i)=><DishCard key={d.name+i} dish={d}/>)}</div></section></main> }
+
+function StoryPage(){ return <main className="inner-page"><PageHero eyebrow="OUR STORY" title={<>India, through<br/><em>a modern lens.</em></>} text="A restaurant shaped by curiosity, comfort and the belief that a great meal should feel both familiar and new."/><section className="story-editorial section"><div className="story-copy"><p className="eyebrow">OUR INSPIRATION</p><h2>Familiar flavours.<br/><em>Fresh perspective.</em></h2><p>Plated India is imagined as a meeting point between the food we grew up loving and the dishes we are excited to discover next.</p><p>We keep the soul of comfort food intact while giving every plate a little more room to breathe: cleaner presentation, considered ingredients and flavours that invite another bite.</p></div><img src="./images/dish-4.png" alt="Plated pasta dish"/></section><section className="quote-section sage"><p>“Food is not just what we serve.<br/><em>It is how we bring people together.</em>”</p></section><section className="values section"><div><p className="eyebrow">THE PLATED WAY</p><h2>Three things<br/><em>we care about.</em></h2></div><div className="value-list"><Point n="01" title="Ingredient first" text="Good ingredients do most of the talking."/><Point n="02" title="Thoughtful technique" text="Classic ideas, modern execution."/><Point n="03" title="Generous hospitality" text="Come as a guest. Leave like a regular."/></div></section></main> }
+
+function PageHero({eyebrow,title,text}){ return <section className="page-hero"><div><p className="eyebrow">{eyebrow}</p><h1>{title}</h1><p className="hero-lede">{text}</p></div></section> }
+
+function CirclePage({onCircle}){ return <main className="inner-page"><PageHero eyebrow="LOYALTY PROGRAM · LIFETIME ACCESS" title={<>Good food.<br/><em>Better rewards.</em></>} text="Welcome to the Plated Circle — our little way of saying thank you for coming back."/><section className="circle-page section"><div className="membership-card"><div className="card-top"><span>PLATED INDIA</span><span>PC · 001</span></div><div className="big-pc">PC</div><div className="card-bottom"><span>PLATED CIRCLE MEMBER</span><span>2026</span></div></div><div className="circle-info"><p className="eyebrow">YOUR PERKS</p><h2>Made for<br/><em>our regulars.</em></h2>{['Earn points with every visit','Birthday surprises','Members-only offers','Early access to special menus','Invitations to exclusive events','Complimentary treats'].map((x,i)=><div className="perk" key={x}><b>0{i+1}</b><span>{x}</span></div>)}<button className="btn dark-btn" onClick={onCircle}>Join the Circle <span>↗</span></button></div></section></main> }
+
+function SpinPage({setToast}){ const [rotation,setRotation]=useState(0); const [spinning,setSpinning]=useState(false); const [result,setResult]=useState(''); const spin=()=>{ if(spinning)return; const index=Math.floor(Math.random()*prizes.length); const extra=360*5+index*(360/prizes.length); setSpinning(true); setResult(''); setRotation(r=>r+extra); setTimeout(()=>{setResult(prizes[index]);setSpinning(false);setToast('Your reward: '+prizes[index]);},4200); }; return <main className="spin-page"><section className="spin-intro"><p className="eyebrow light">THE PLATED CIRCLE</p><h1>Spin for a little<br/><em>something extra.</em></h1><p>Because sometimes dinner comes with a surprise.</p></section><section className="wheel-area"><div className="pointer">▼</div><div className="wheel" style={{transform:`rotate(${rotation}deg)`}}>{prizes.map((p,i)=><div className="wheel-label" key={p} style={{transform:`rotate(${i*60}deg) translateY(-128px) rotate(${-i*60}deg)`}}>{p}</div>)}</div><button className="spin-button" onClick={spin} disabled={spinning}>{spinning?'SPINNING…':'SPIN'}</button>{result&&<div className="win-card"><small>YOU WON</small><strong>{result}</strong><p>Show this reward when you visit Plated.</p></div>}</section></main> }
+
+function ContactPage(){ const [sent,setSent]=useState(false); return <main className="inner-page"><PageHero eyebrow="COME FIND US" title={<>Your table<br/><em>is waiting.</em></>} text="For reservations, celebrations or simply a good dinner, we would love to have you at our table."/><section className="contact-grid section"><div className="contact-info"><div><p className="eyebrow">ADDRESS</p><h3>Panchsheel Park Market,<br/>near Hauz Khas, New Delhi</h3></div><div><p className="eyebrow">OPENING HOURS</p><h3>Tue–Sun, 12:30 PM – 11:00 PM<br/><small>Closed Mondays</small></h3></div><div><p className="eyebrow">CONTACT</p><h3>+91 9812345678<br/>hello@platedindia.com</h3></div></div><form className="reservation" onSubmit={e=>{e.preventDefault();setSent(true)}}><p className="eyebrow">RESERVE A TABLE</p><h2>Let's make<br/><em>it a date.</em></h2><div className="form-grid"><label>Name<input required placeholder="Your name"/></label><label>Email<input required type="email" placeholder="you@email.com"/></label><label>Phone<input placeholder="+91"/></label><label>Guests<select defaultValue="2"><option>2 guests</option><option>3 guests</option><option>4 guests</option><option>5+ guests</option></select></label><label>Date<input type="date"/></label><label>Time<input type="time"/></label></div><label>Special request<textarea rows="4" placeholder="Birthday, dietary note, occasion…"/></label><button className="btn dark-btn" type="submit">{sent?'Request received ✓':'Request a Reservation ↗'}</button></form></section><section className="map-placeholder"><div><p className="eyebrow">FIND US</p><h2>Come by.<br/><em>Stay awhile.</em></h2><span>Map integration can be added here.</span></div></section></main> }
+
+function CircleModal({close}){ const [done,setDone]=useState(false); return <div className="modal-backdrop" onClick={close}><div className="modal" onClick={e=>e.stopPropagation()}><button className="modal-x" onClick={close}>×</button>{done?<><p className="eyebrow">WELCOME TO THE CIRCLE</p><h2>You’re in.<br/><em>See you at the table.</em></h2><p>We’ve saved your details for the next step.</p><button className="btn dark-btn" onClick={close}>Done</button></>:<><p className="eyebrow">PLATED CIRCLE</p><h2>Join the<br/><em>inner circle.</em></h2><p>Sign up for member rewards, birthday surprises and special invitations.</p><form onSubmit={e=>{e.preventDefault();setDone(true)}}><input required placeholder="First name"/><input required type="email" placeholder="Email address"/><button className="btn dark-btn">Join the Circle ↗</button></form></>}</div></div> }
+
+function Footer({link}){ return <footer className="footer"><div className="footer-top"><div><button className="brand footer-brand" onClick={()=>link('/')}><span>PLATED</span><small>INDIA</small></button><p>Modern Indian dining.<br/>One plate. Whole world.</p></div><div><p className="eyebrow">NAVIGATION</p><button onClick={()=>link('/menu')}>Menu</button><button onClick={()=>link('/story')}>Our Story</button><button onClick={()=>link('/circle')}>Loyalty Circle</button><button onClick={()=>link('/contact')}>Contact</button></div><div><p className="eyebrow">VISIT</p><p>Panchsheel Park Market<br/>New Delhi, India</p><p>Tue–Sun · 12:30 PM – 11 PM</p></div><div><p className="eyebrow">CONTACT</p><p>+91 9812345678<br/>hello@platedindia.com</p></div></div><div className="footer-bottom"><span>© 2026 PLATED INDIA</span><span>ALL RIGHTS RESERVED</span></div></footer> }
+
+const styles = `
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&family=Playfair+Display:ital,wght@0,500;0,600;1,500;1,600&display=swap');
+:root{--sage:#a8b5a2;--forest:#26382f;--cream:#f7f4ec;--beige:#e9e2d5;--ink:#20231f;--white:#fff;--line:rgba(32,35,31,.14)}*{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;background:var(--cream);color:var(--ink);font-family:'DM Sans',sans-serif}button,input,textarea,select{font:inherit}button{cursor:pointer;border:0;background:none;color:inherit}img{display:block;width:100%}.site{overflow:hidden}.nav-wrap{position:fixed;z-index:50;top:0;left:0;right:0;padding:18px 4vw}.nav{height:68px;max-width:1400px;margin:auto;padding:0 20px;display:flex;align-items:center;justify-content:space-between;border:1px solid rgba(255,255,255,.28);background:rgba(247,244,236,.84);backdrop-filter:blur(18px);border-radius:999px;box-shadow:0 10px 35px rgba(32,35,31,.07)}.brand{display:flex;align-items:baseline;gap:7px;font-weight:600;letter-spacing:.16em}.brand span{font-size:18px}.brand small{font-size:8px;letter-spacing:.24em}.nav-links{display:flex;gap:4px;align-items:center}.nav-links button,.nav-actions button{padding:10px 13px;font-size:12px;letter-spacing:.02em}.nav-links button.active{background:var(--forest);color:white;border-radius:999px}.nav-actions{display:flex;gap:6px;align-items:center}.reserve-btn{background:var(--forest);color:#fff!important;border-radius:999px;padding:13px 18px!important}.mobile-circle{display:none}.hamb{display:none}.hero{min-height:100svh;position:relative;color:#fff;display:flex;align-items:flex-end}.hero-image,.hero-shade{position:absolute;inset:0}.hero-image{background-size:cover;background-position:center}.hero-shade{background:linear-gradient(90deg,rgba(18,25,20,.72),rgba(18,25,20,.18) 60%,rgba(18,25,20,.28))}.hero-copy{position:relative;z-index:2;max-width:760px;padding:0 8vw 10vh}.hero h1,.page-hero h1{font:500 clamp(58px,8vw,126px)/.9 'Playfair Display',serif;letter-spacing:-.05em;margin:16px 0 26px}.hero h1 em,.page-hero h1 em,h2 em{font-style:italic}.hero-copy>p:not(.eyebrow){max-width:520px;font-size:17px;line-height:1.65;color:rgba(255,255,255,.88)}.eyebrow{font-size:10px;letter-spacing:.22em;font-weight:600;margin:0 0 18px;text-transform:uppercase}.light{color:rgba(255,255,255,.7)}.hero-buttons{display:flex;gap:12px;margin-top:28px}.btn{padding:15px 22px;border-radius:999px;font-weight:600;font-size:12px;letter-spacing:.04em}.light-btn{background:#fff;color:var(--forest)}.dark-btn{background:var(--forest);color:#fff}.ghost-light{padding:15px 20px;color:#fff;border:1px solid rgba(255,255,255,.45);border-radius:999px;font-size:12px}.hero-note{position:absolute;right:5vw;bottom:7vh;z-index:2;font-size:9px;letter-spacing:.2em;writing-mode:vertical-rl}.hero-note span{height:50px;width:1px;background:rgba(255,255,255,.5);display:inline-block;margin:12px 0}.scroll-cue{position:absolute;left:5vw;bottom:7vh;z-index:2;font-size:9px;letter-spacing:.18em}.scroll-cue span{margin-left:10px}.section{padding:120px 7vw}.intro{display:grid;grid-template-columns:1.05fr .9fr;gap:10vw;align-items:center}.intro-image{max-width:620px}.intro-image img{aspect-ratio:4/5;object-fit:cover}.intro-copy h2,.section-head h2,.experience h2,.circle-teaser h2,.spin-strip h2,.reviews h2,.final-cta h2,.story-copy h2,.values h2,.circle-info h2,.reservation h2,.map-placeholder h2{font:500 clamp(44px,5vw,74px)/.96 'Playfair Display',serif;letter-spacing:-.04em;margin:0 0 25px}.intro-copy>p:not(.eyebrow),.experience-left>p:not(.eyebrow),.circle-teaser>div:last-child>p:not(.eyebrow){line-height:1.75;color:#5c625c;max-width:540px}.arrow-link{display:inline-flex;gap:15px;align-items:center;margin-top:18px;text-transform:uppercase;font-size:10px;letter-spacing:.17em;border-bottom:1px solid currentColor;padding-bottom:8px}.arrow-link span{font-size:15px}.sage{background:var(--sage)}.section-head{display:flex;justify-content:space-between;align-items:end;margin-bottom:50px}.section-head .arrow-link{margin-bottom:6px}.dark{color:var(--forest)}.dish-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:22px}.dish-image{position:relative;overflow:hidden;background:#ddd}.dish-image img{aspect-ratio:4/4.6;object-fit:cover;transition:transform .6s}.dish:hover .dish-image img{transform:scale(1.04)}.dish-image span{position:absolute;left:14px;top:14px;background:rgba(255,255,255,.88);padding:7px 9px;font-size:8px;letter-spacing:.14em}.dish-meta{display:flex;justify-content:space-between;gap:18px;padding:18px 0}.dish-meta h3{margin:0 0 7px;font:500 22px 'Playfair Display',serif}.dish-meta p{margin:0;color:#6c716b;font-size:12px;line-height:1.5;max-width:270px}.dish-meta strong{font-size:12px;white-space:nowrap}.experience{background:var(--forest);color:#fff;display:grid;grid-template-columns:1fr 1fr;gap:12vw}.experience-left>p:not(.eyebrow){color:rgba(255,255,255,.65)}.experience-points{padding-top:15px}.point{display:grid;grid-template-columns:55px 1fr;gap:20px;padding:24px 0;border-top:1px solid rgba(255,255,255,.16)}.point:last-child{border-bottom:1px solid rgba(255,255,255,.16)}.point>span{font-size:10px;letter-spacing:.15em;opacity:.55}.point h3{font:500 26px 'Playfair Display',serif;margin:0 0 7px}.point p{margin:0;color:rgba(255,255,255,.6);font-size:12px}.story-banner{height:78vh;min-height:580px;position:relative;color:#fff;display:flex;align-items:center}.story-bg{position:absolute;inset:0;background:url('./images/dish-2.png') center/cover}.story-overlay{position:absolute;inset:0;background:linear-gradient(90deg,rgba(20,30,24,.72),rgba(20,30,24,.15))}.story-content{position:relative;z-index:2;padding:7vw;max-width:850px}.story-content h2{font:500 clamp(48px,6vw,88px)/.95 'Playfair Display',serif;letter-spacing:-.04em;margin:0 0 30px}.circle-teaser{display:grid;grid-template-columns:.8fr 1fr;gap:10vw;align-items:center}.circle-art{width:min(480px,80vw);aspect-ratio:1;border-radius:50%;background:var(--forest);color:var(--sage);display:grid;place-items:center;position:relative;margin:auto}.circle-center{font:500 130px 'Playfair Display',serif}.circle-ring{position:absolute;inset:22px;border:1px solid rgba(168,181,162,.35);border-radius:50%;display:grid;place-items:center;font-size:10px;letter-spacing:.3em;transform:rotate(-35deg)}.two-btn{display:flex;gap:20px;align-items:center}.spin-strip{background:var(--forest);color:#fff;padding:70px 7vw;display:flex;justify-content:space-between;align-items:center;gap:30px}.spin-strip h2{margin-bottom:12px}.spin-strip p:last-child{color:rgba(255,255,255,.6)}.wheel-cta{width:160px;height:160px;border:1px solid rgba(255,255,255,.35);border-radius:50%;color:#fff;letter-spacing:.15em;font-size:10px}.reviews{background:var(--beige)}.review-mark{font-size:13px;letter-spacing:.25em}.review-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:30px}.review-grid blockquote{margin:0;border-top:1px solid rgba(32,35,31,.18);padding-top:25px}.review-grid blockquote>span{font:500 55px 'Playfair Display',serif}.review-grid blockquote p{font:500 24px/1.25 'Playfair Display',serif;margin:5px 0 30px}.review-grid footer{font-size:10px;letter-spacing:.12em}.review-grid footer small{margin-left:15px;letter-spacing:.02em}.final-cta{text-align:center;padding:130px 20px}.final-cta h2{font-size:clamp(55px,7vw,100px)}.inner-page{padding-top:68px}.page-hero{padding:190px 7vw 100px;background:var(--sage)}.page-hero h1{max-width:900px;color:var(--forest)}.hero-lede{max-width:560px;color:#536056;line-height:1.7;font-size:16px}.menu-section{padding-top:60px}.category-bar{display:flex;gap:8px;overflow:auto;padding-bottom:30px;border-bottom:1px solid var(--line);margin-bottom:55px}.category-bar button{padding:11px 17px;border:1px solid var(--line);border-radius:999px;font-size:10px;white-space:nowrap}.category-bar button.selected{background:var(--forest);color:white;border-color:var(--forest)}.menu-list{display:grid;grid-template-columns:repeat(2,1fr);gap:65px 28px}.story-editorial{display:grid;grid-template-columns:1fr 1fr;gap:9vw;align-items:center}.story-editorial img{aspect-ratio:4/5;object-fit:cover}.story-copy p:not(.eyebrow){line-height:1.75;color:#5c625c;max-width:550px}.quote-section{padding:150px 7vw;text-align:center}.quote-section p{font:500 clamp(40px,5vw,70px)/1.05 'Playfair Display',serif;color:var(--forest);margin:0}.values{display:grid;grid-template-columns:1fr 1fr;gap:12vw}.value-list .point{color:var(--ink);border-color:var(--line)}.value-list .point p{color:#6c716b}.circle-page{display:grid;grid-template-columns:1fr 1fr;gap:12vw;align-items:center}.membership-card{background:var(--forest);color:var(--sage);aspect-ratio:1.6;border-radius:25px;padding:30px;display:flex;flex-direction:column;justify-content:space-between;box-shadow:25px 25px 0 var(--beige)}.card-top,.card-bottom{display:flex;justify-content:space-between;font-size:9px;letter-spacing:.18em}.big-pc{text-align:center;font:500 clamp(100px,15vw,200px) 'Playfair Display',serif}.perk{display:flex;gap:20px;padding:14px 0;border-top:1px solid var(--line);font-size:13px}.perk b{font-size:9px;opacity:.45}.circle-info .btn{margin-top:28px}.spin-page{min-height:100vh;background:var(--forest);color:#fff;padding-top:150px}.spin-intro{text-align:center}.spin-intro h1{font:500 clamp(55px,7vw,100px)/.95 'Playfair Display',serif;letter-spacing:-.04em;margin:0 0 22px}.spin-intro p:last-child{color:rgba(255,255,255,.6)}.wheel-area{height:650px;display:grid;place-items:center;position:relative;max-width:800px;margin:auto}.wheel{width:340px;height:340px;border-radius:50%;border:7px solid var(--sage);background:conic-gradient(var(--sage) 0 60deg,#d8dfd3 60deg 120deg,var(--sage) 120deg 180deg,#d8dfd3 180deg 240deg,var(--sage) 240deg 300deg,#d8dfd3 300deg 360deg);position:relative;transition:transform 4s cubic-bezier(.15,.85,.2,1);box-shadow:0 0 0 14px rgba(168,181,162,.1)}.wheel:after{content:'';position:absolute;inset:18px;border-radius:50%;border:1px solid rgba(38,56,47,.2)}.wheel-label{position:absolute;left:50%;top:50%;width:110px;margin-left:-55px;margin-top:-8px;text-align:center;color:var(--forest);font-size:8px;font-weight:700;letter-spacing:.08em}.pointer{position:absolute;top:82px;z-index:4;color:#fff;font-size:24px}.spin-button{position:absolute;z-index:5;width:100px;height:100px;border-radius:50%;background:var(--forest);color:#fff;border:1px solid rgba(255,255,255,.35);font-size:11px;letter-spacing:.15em}.win-card{position:absolute;bottom:0;background:var(--cream);color:var(--ink);padding:20px 25px;text-align:center;min-width:270px}.win-card small{display:block;letter-spacing:.18em;font-size:8px}.win-card strong{display:block;font:500 28px 'Playfair Display',serif;margin:7px}.win-card p{font-size:10px;color:#6c716b}.contact-grid{display:grid;grid-template-columns:.8fr 1.2fr;gap:12vw}.contact-info{display:flex;flex-direction:column;gap:50px}.contact-info h3{font:500 25px/1.25 'Playfair Display',serif;margin:0}.contact-info small{font:12px 'DM Sans',sans-serif;color:#73786f}.reservation{background:#fff;padding:45px}.reservation h2{font-size:55px}.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:18px}.reservation label{display:flex;flex-direction:column;gap:7px;font-size:9px;letter-spacing:.12em;text-transform:uppercase;margin-bottom:18px}.reservation input,.reservation select,.reservation textarea,.modal input{border:0;border-bottom:1px solid var(--line);background:transparent;padding:12px 0;outline:none;font-size:14px;text-transform:none;letter-spacing:0;color:var(--ink)}.reservation textarea{resize:vertical}.map-placeholder{margin:0 7vw 120px;min-height:380px;background:linear-gradient(135deg,var(--sage),var(--beige));display:flex;align-items:center;justify-content:center;text-align:center}.map-placeholder span{font-size:10px;color:#5c625c}.footer{background:#1d2a23;color:#fff;padding:80px 7vw 25px}.footer-top{display:grid;grid-template-columns:1.5fr 1fr 1fr 1fr;gap:50px;padding-bottom:80px}.footer-brand{color:#fff}.footer-top p{font-size:11px;line-height:1.7;color:rgba(255,255,255,.58)}.footer-top>div>button:not(.brand){display:block;color:rgba(255,255,255,.75);font-size:11px;margin:9px 0}.footer .eyebrow{color:rgba(255,255,255,.45);font-size:9px}.footer-bottom{display:flex;justify-content:space-between;border-top:1px solid rgba(255,255,255,.12);padding-top:20px;color:rgba(255,255,255,.4);font-size:8px;letter-spacing:.15em}.modal-backdrop{position:fixed;z-index:100;inset:0;background:rgba(20,28,23,.6);backdrop-filter:blur(10px);display:grid;place-items:center;padding:20px}.modal{position:relative;background:var(--cream);padding:55px;max-width:500px;width:100%;box-shadow:0 30px 100px rgba(0,0,0,.25)}.modal-x{position:absolute;right:20px;top:18px;font-size:25px}.modal h2{font:500 52px/.95 'Playfair Display',serif;margin:0 0 18px}.modal p:not(.eyebrow){color:#6c716b;line-height:1.6;font-size:13px}.modal form{display:grid;gap:12px;margin-top:25px}.modal input{background:#fff;padding:14px}.toast{position:fixed;z-index:110;right:25px;bottom:25px;background:var(--forest);color:#fff;padding:15px 20px;font-size:11px;box-shadow:0 10px 40px rgba(0,0,0,.2)}.reveal{opacity:0;transform:translateY(28px);transition:opacity .8s ease,transform .8s ease}.reveal.visible{opacity:1;transform:none}
+@media(max-width:900px){.nav-links{display:none;position:absolute;top:76px;left:0;right:0;background:var(--cream);padding:18px;border-radius:24px;box-shadow:0 15px 40px rgba(0,0,0,.1);flex-direction:column;align-items:stretch}.nav-links.open{display:flex}.nav-links button{text-align:left;padding:14px}.mobile-circle{display:block!important;background:var(--forest);color:#fff!important;border-radius:999px;text-align:center!important;margin-top:5px}.nav-actions .text-link{display:none}.hamb{display:grid;gap:5px;padding:10px}.hamb i{display:block;width:22px;height:1px;background:var(--ink)}.hero-copy{padding:0 7vw 12vh}.hero-note{display:none}.intro,.experience,.circle-teaser,.story-editorial,.values,.circle-page,.contact-grid{grid-template-columns:1fr;gap:60px}.dish-grid,.review-grid{grid-template-columns:1fr 1fr}.section{padding:85px 7vw}.section-head{display:block}.section-head .arrow-link{margin-top:20px}.menu-list{grid-template-columns:1fr}.footer-top{grid-template-columns:1fr 1fr}.membership-card{max-width:620px}.spin-page{padding-top:120px}.wheel-area{height:580px}.wheel{width:300px;height:300px}.pointer{top:85px}.reservation{padding:30px}.map-placeholder{margin:0 5vw 80px}}
+@media(max-width:560px){.nav-wrap{padding:10px}.nav{height:58px}.brand span{font-size:15px}.hero h1{font-size:60px}.hero-copy>p:not(.eyebrow){font-size:14px}.hero-buttons{flex-wrap:wrap}.dish-grid,.review-grid,.footer-top,.form-grid{grid-template-columns:1fr}.section{padding:75px 6vw}.intro-copy h2,.section-head h2,.experience h2,.circle-teaser h2,.spin-strip h2,.reviews h2,.final-cta h2,.story-copy h2,.values h2,.circle-info h2{font-size:48px}.spin-strip{display:block;padding:65px 7vw}.wheel-cta{margin-top:30px}.page-hero{padding:140px 6vw 75px}.page-hero h1{font-size:60px}.circle-art{width:85vw}.membership-card{box-shadow:12px 12px 0 var(--beige)}.wheel-area{height:530px}.wheel{width:270px;height:270px}.wheel-label{transform-origin:center 135px!important}.modal{padding:40px 25px}.footer-top{gap:35px}.footer-bottom{display:block;line-height:2}.footer-bottom span{display:block}}
+`;
+
+
+
+ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+</script>
+</body>
+</html>

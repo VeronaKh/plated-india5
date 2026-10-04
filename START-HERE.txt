@@ -1,0 +1,22 @@
+PLATED INDIA — GITHUB PAGES READY
+
+UPLOAD:
+Upload ALL files/folders in this folder to the ROOT of your GitHub repository.
+
+Your GitHub repository should look like:
+  index.html
+  .nojekyll
+  images/
+    dish-1.png
+    dish-2.png
+    dish-3.png
+    dish-4.png
+
+IMPORTANT:
+Do not put dish-1.png etc. next to index.html. Keep them inside images/.
+
+GitHub Pages:
+Settings > Pages > Deploy from a branch > main > /(root)
+Custom domain: leave empty.
+
+Navigation uses #/menu, #/story, #/circle, #/spin and #/contact so it works on GitHub Pages project URLs.
